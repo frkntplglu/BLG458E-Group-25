@@ -1,0 +1,17 @@
+---CONSOLE TEST CASES---
+-- let objects = [Ninja {name = "Naruto", country = 'F', status = "Junior", exam1 = 40.0, exam2 = 45.0, ability1 = "Clone", ability2 = "Summon", r = 0, score = 103.5},Ninja {name = "Sasuke", country = 'F', status = "Junior", exam1 = 50.0, exam2 = 60.0, ability1 = "Lightning", ability2 = "Fire", r = 0, score = 133.0},Ninja {name = "Neiji", country = 'F', status = "Junior", exam1 = 40.0, exam2 = 75.0, ability1 = "Vision", ability2 = "Hit", r = 0, score = 82.5},Ninja {name = "Gaara", country = 'N', status = "Junior", exam1 = 55.0, exam2 = 80.0, ability1 = "Vision", ability2 = "Sand", r = 0, score = 131.5},Ninja {name = "Temari", country = 'N', status = "Junior", exam1 = 40.0, exam2 = 60.0, ability1 = "Hit", ability2 = "Blade", r = 0, score = 68.0},Ninja {name = "Kankuro", country = 'N', status = "Junior", exam1 = 30.0, exam2 = 50.0, ability1 = "Hit", ability2 = "Storm", r = 0, score = 50.0},Ninja {name = "Midare", country = 'W', status = "Junior", exam1 = 35.0, exam2 = 45.0, ability1 = "Hit", ability2 = "Water", r = 0, score = 71.0},Ninja {name = "Suiu", country = 'W', status = "Junior", exam1 = 45.0, exam2 = 55.0, ability1 = "Water", ability2 = "Blade", r = 0, score = 89.0},Ninja {name = "Samidare", country = 'W', status = "Junior", exam1 = 30.0, exam2 = 55.0, ability1 = "Water", ability2 = "Hit", r = 0, score = 71.5},Ninja {name = "Haruki", country = 'E', status = "Junior", exam1 = 50.0, exam2 = 65.0, ability1 = "Blade", ability2 = "Rock", r = 0, score = 84.5},Ninja {name = "Miyazaki", country = 'E', status = "Junior", exam1 = 45.0, exam2 = 55.0, ability1 = "Rock", ability2 = "Hit", r = 0, score = 69.0},Ninja {name = "Hiroshi", country = 'E', status = "Junior", exam1 = 40.0, exam2 = 60.0, ability1 = "Storm", ability2 = "Rock", r = 0, score = 68.0},Ninja {name = "Sana", country = 'L', status = "Junior", exam1 = 55.0, exam2 = 65.0, ability1 = "Lightning", ability2 = "Hit", r = 0, score = 107.0},Ninja {name = "Aimi", country = 'L', status = "Junior", exam1 = 60.0, exam2 = 65.0, ability1 = "Blade", ability2 = "Rock", r = 0, score = 89.5},Ninja {name = "Kira", country = 'L', status = "Junior", exam1 = 40.0, exam2 = 60.0, ability1 = "Storm", ability2 = "Rock", r = 0, score = 68.0}]
+
+-- let fire = (filterByCountry objects 'F')
+-- let lightning = (filterByCountry objects 'L')
+-- let water = (filterByCountry objects 'W')
+-- let wind = (filterByCountry objects 'N')
+-- let earth = (filterByCountry objects 'E')
+
+-- makeRoundBetweenTwoCountries objects fire water
+
+-- let ninja1 = Ninja {name = "Naruto", country = 'F', status = "Junior", exam1 = 40.0, exam2 = 45.0, ability1 = "Clone", ability2 = "Summon", r = 0, score = 103.5}
+-- let ninja2 = Ninja {name = "Kankuro", country = 'N', status = "Junior", exam1 = 30.0, exam2 = 50.0, ability1 = "Hit", ability2 = "Storm", r = 0, score = 50.0}
+-- let ninja3 = Ninja {name = "Gaara", country = 'N', status = "Junior", exam1 = 55.0, exam2 = 80.0, ability1 = "Vision", ability2 = "Sand", r = 0, score = 131.5}
+-- let ninja4 = Ninja {name = "Suiu", country = 'W', status = "Junior", exam1 = 45.0, exam2 = 55.0, ability1 = "Water", ability2 = "Blade", r = 0, score = 89.0}
+
+-- makeRoundBetweenTwoCountries objects fire water
