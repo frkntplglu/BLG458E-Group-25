@@ -1,0 +1,15 @@
+Naruto Fire 40 45 Clone Summon
+Sasuke Fire 50 60 Lightning Fire
+Neiji Fire 40 75 Vision Hit
+Gaara Wind 55 80 Vision Sand
+Temari Wind 40 60 Hit Blade
+Kankuro Wind 30 50 Hit Storm
+Midare Water 35 45 Hit Water
+Suiu Water 45 55 Water Blade
+Samidare Water 30 55 Water Hit
+Haruki Earth 50 65 Blade Rock
+Miyazaki Earth 45 55 Rock Hit
+Hiroshi Earth 40 60 Storm Rock
+Sana Lightning 55 65 Lightning Hit
+Aimi Lightning 60 65 Blade Rock
+Kira Lightning 40 60 Storm Rock      
