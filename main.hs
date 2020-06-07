@@ -85,7 +85,7 @@ furkanNinjas = [
 
 parse :: String -> Ninja
 parse ninja = 
-        let [n,c,e1,e2,a1,a2,r] = words ninja
+        let [n,c,e1,e2,a1,a2] = words ninja
             ability1 = decAbility a1
             ability2 = decAbility a2
             score = 0.5 * (read e1) + 0.3 * (read e2) + ability1 + ability2
@@ -94,7 +94,7 @@ parse ninja =
                         "Wind" -> 'N'
                         otherwise -> head c
             status = "Junior"
-        in Ninja {name = n,country = country, status = status, exam1 = read e1, exam2 = read e2, ability1 = a1, ability2 = a2, r = read r,score = score}
+        in Ninja {name = n,country = country, status = status, exam1 = read e1, exam2 = read e2, ability1 = a1, ability2 = a2, r = 0,score = score}
 
 sortByScore :: [Ninja] -> [Ninja]
 sortByScore = sortBy (flip (comparing score))
