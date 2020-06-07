@@ -4,6 +4,8 @@ import Data.Char
 import System.Environment
 import System.IO
 import Data.Maybe
+import Data.List
+import Data.Ord
 
 data Ninja = Ninja {name:: String, country:: Char,
                     status:: String, exam1:: Float,
@@ -33,9 +35,57 @@ decAbility "Summon" = 50
 decAbility "Storm" = 10
 decAbility "Rock" = 20
 
+furkanNinjas = [
+    Ninja {
+        name = "Naruto", 
+        country = 'F', 
+        status = "Junior", 
+        exam1 = 40.0, 
+        exam2 = 45.0, 
+        ability1 = "Clone", 
+        ability2 = "Summon", 
+        r = 0, 
+        score = 103.5
+    },
+    Ninja {
+        name = "Midare", 
+        country = 'W', 
+        status = "Junior", 
+        exam1 = 35.0, 
+        exam2 = 45.0, 
+        ability1 = "Hit", 
+        ability2 = "Water", 
+        r = 0, 
+        score = 71.0
+    },
+    Ninja {
+        name = "Midare", 
+        country = 'W', 
+        status = "Junior", 
+        exam1 = 35.0, 
+        exam2 = 45.0, 
+        ability1 = "Hit", 
+        ability2 = "Water", 
+        r = 0, 
+        score = 45.0
+    },
+    Ninja {
+        name = "Midare", 
+        country = 'W', 
+        status = "Junior", 
+        exam1 = 35.0, 
+        exam2 = 45.0, 
+        ability1 = "Hit", 
+        ability2 = "Water", 
+        r = 0, 
+        score = 65.0
+    }]
+
+
+
 parse :: String -> Ninja
 parse ninja = 
-        let [n,c,e1,e2,a1,a2] = words ninja
+        let [n,c,e1,e2,a1,a2,r] = words ninja
             ability1 = decAbility a1
             ability2 = decAbility a2
             score = 0.5 * (read e1) + 0.3 * (read e2) + ability1 + ability2
@@ -44,7 +94,19 @@ parse ninja =
                         "Wind" -> 'N'
                         otherwise -> head c
             status = "Junior"
-        in Ninja {name = n,country = country, status = status, exam1 = read e1, exam2 = read e2, ability1 = a1, ability2 = a2, r = 0,score = score}
+        in Ninja {name = n,country = country, status = status, exam1 = read e1, exam2 = read e2, ability1 = a1, ability2 = a2, r = read r,score = score}
+
+sortByScore :: [Ninja] -> [Ninja]
+sortByScore = sortBy (flip (comparing score))
+
+sortByRound :: [Ninja] -> [Ninja]
+sortByRound = sortBy (comparing r)
+
+
+tellNinja :: Ninja -> String  
+tellNinja (Ninja {name = n, country = c, status = s, exam1 = e1, exam2 = e2, ability1 = a1, ability2 = a2, r = r, score = score}) = n ++ ", Score: " ++ show score ++ ", Status: " ++ s ++ ", Round: " ++ show r
+
+
 
 merge :: [Ninja] -> [Ninja] -> [Ninja]
 merge x [] = x
@@ -66,8 +128,8 @@ filterByCountry xs c =
 main = do
         handle <- readFile "csereport.txt"
         let fileLines = lines handle
-        let ninjas = map parse fileLines
-        ---print(ninjas)
+        let ninjas = sortByRound ( sortByScore (map parse fileLines) )
+        --print(ninjas)
         printMenu ninjas
 
 printMenu :: [Ninja] -> IO()
@@ -86,7 +148,8 @@ printMenu ninjas = do
                             print("Print Ninjas on %d",toUpper c)
                             let ls = (filterByCountry ninjas (toUpper c))
                             printMenu ninjas  
-            'B'     -> do   print("Print Ninjas of all countries")
+            'B'     -> do   print "\n"
+                            mapM_ putStrLn (map tellNinja ninjas)
                             printMenu ninjas 
             'C'     -> do   putStr "\nEnter the name of the first ninja: "
                             nameNinja1 <- getLine
