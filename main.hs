@@ -100,16 +100,8 @@ sortByScore = sortBy (flip (comparing score))
 sortByRound :: [Ninja] -> [Ninja]
 sortByRound = sortBy (comparing r)
 
-
 tellNinja :: Ninja -> String  
 tellNinja (Ninja {name = n, country = c, status = s, exam1 = e1, exam2 = e2, ability1 = a1, ability2 = a2, r = r, score = score}) = n ++ ", Score: " ++ show score ++ ", Status: " ++ s ++ ", Round: " ++ show r
-
-
-
-merge :: [Ninja] -> [Ninja] -> [Ninja]
-merge x [] = x
-merge [] y = y  
-merge (x:xs) (y:ys) = x : y : merge xs ys
 
 isSameCountryCode :: Char -> Char -> Bool
 isSameCountryCode c n = c == n
