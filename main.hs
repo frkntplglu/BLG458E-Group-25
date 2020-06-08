@@ -81,8 +81,6 @@ furkanNinjas = [
         score = 65.0
     }]
 
-
-
 parse :: String -> Ninja
 parse ninja = 
         let [n,c,e1,e2,a1,a2] = words ninja
@@ -123,55 +121,100 @@ isSameCountry c ninja =
         
 filterByCountry :: [Ninja] -> Char -> [Ninja]
 filterByCountry xs c =
-  filter (isSameCountry c) xs
+  filter (isSameCountry (toUpper(c))) xs
 
+sortNinjasOfCountry :: [Ninja] -> Char -> [Ninja]
+sortNinjasOfCountry ninjas countryCode =
+    (sortByRound (sortByScore (filterByCountry ninjas countryCode)))
+
+controlCountryCode :: Char -> Bool
+controlCountryCode c 
+    | toUpper c == 'E' || toUpper c == 'L' || toUpper c ==  'W' || toUpper c ==  'N' || toUpper c ==  'F' = True
+    | otherwise = False
 main = do
-        handle <- readFile "csereport.txt"
-        let fileLines = lines handle
-        let ninjas = sortByRound ( sortByScore (map parse fileLines) )
-        --print(ninjas)
-        printMenu ninjas
+        hSetBuffering stdin NoBuffering
+        hSetBuffering stdout NoBuffering
+        args <- getArgs
+        case args of 
+            [file] -> do
+                handle <- readFile file
+                let fileLines = lines handle
+                let ninjas = sortByRound ( sortByScore (map parse fileLines) )
+                printMenu ninjas
+          --  _ -> putStrLn "Wrong number of arguments"
+            _  -> do -- Delete this block before submit
+                handle <- readFile "csereport.txt"
+                let fileLines = lines handle
+                let ninjas = sortByRound ( sortByScore (map parse fileLines) )
+                printMenu ninjas
+
+sortAllNinjas :: [Ninja] -> [Ninja]
+sortAllNinjas ninjas = 
+    sortByRound (sortByScore (ninjas))
 
 printMenu :: [Ninja] -> IO()
 printMenu ninjas = do
-    putStrLn "a) View a County's Ninja Information"  
+    putStrLn "\na) View a County's Ninja Information"  
     putStrLn "b) View All Countries' Ninja Information"  
     putStrLn "c) Make a Round Between Ninjas"  
     putStrLn "d) Make a Round Between Countries"  
     putStrLn "e) Exit"  
-    putStr "Enter the action: "
     do
+        putStr "Enter the action: "
         command <- getChar
         case toUpper command of
             'A'     -> do   putStr "\nEnter the country code: "
-                            c <- getChar
-                            print("Print Ninjas on %d",toUpper c)
-                            let ls = (filterByCountry ninjas (toUpper c))
+                            countryCode <- getChar
+                            case controlCountryCode countryCode of
+                                True -> do
+                                    putStr "\n" 
+                                    let countryNinjas = (sortNinjasOfCountry ninjas countryCode)
+                                    mapM_ putStrLn (map tellNinja countryNinjas)
+                                False -> putStrLn "\nInvalid Country Code"
                             printMenu ninjas  
-            'B'     -> do   print "\n"
-                            mapM_ putStrLn (map tellNinja ninjas)
+            'B'     -> do   putStr "\n"
+                            let allNinjas = sortAllNinjas ninjas 
+                            mapM_ putStrLn (map tellNinja allNinjas)
                             printMenu ninjas 
             'C'     -> do   putStr "\nEnter the name of the first ninja: "
                             nameNinja1 <- getLine
                             putStr "Enter the country code of the first ninja: "
                             countryNinja1 <- getChar  
-                            putStr "\nEnter the name of the second ninja: "
-                            nameNinja2 <- getLine
-                            putStr "Enter the country code of the second ninja: "
-                            countryNinja2 <- getChar
                             case (findNinja ninjas nameNinja1 countryNinja1) of 
-                                Just n1 -> case (findNinja ninjas nameNinja2 countryNinja2) of
+                                Just n1 -> do 
+                                    putStr "\nEnter the name of the second ninja: "
+                                    nameNinja2 <- getLine
+                                    putStr "Enter the country code of the second ninja: "
+                                    countryNinja2 <- getChar
+                                    case (findNinja ninjas nameNinja2 countryNinja2) of
                                             Just n2 -> do
                                                 let [newList,winner] = (makeRoundBetweenTwoNinjas ninjas n1 n2)
                                                 printWinner (head winner)
-                                                print(newList)
                                                 printMenu newList
-                                            Nothing -> putStrLn "Invalid Ninja2"
-                                Nothing -> putStrLn "Invalid Ninja1"
-            'D'     -> do   print("Make a round between two countries")
+                                            Nothing -> putStrLn "\nInvalid Ninja2"
+                                Nothing -> putStrLn "\nInvalid Ninja1"
+                            putStr "\n"
+                            printMenu ninjas
+            'D'     -> do   putStr "\nEnter the first country code: "
+                            countryCode1 <- getChar
+                            case controlCountryCode countryCode1 of
+                                True -> do 
+                                    putStr "\nEnter the second country code: "
+                                    countryCode2 <- getChar
+                                    case controlCountryCode countryCode2 of
+                                        True -> do
+                                            let countryNinjas1 = (sortNinjasOfCountry ninjas countryCode1)
+                                            let countryNinjas2 = (sortNinjasOfCountry ninjas countryCode2)
+                                            let [newList,winner] = (makeRoundBetweenTwoCountries ninjas countryNinjas1 countryNinjas2)
+                                            printWinner (head winner)
+                                            printMenu newList
+                                        False -> do
+                                            putStrLn "Invalid Country Code"
+                                False -> putStrLn "Invalid Country Code" 
                             printMenu ninjas
             'E'     -> do   print("Exit")
                             printMenu ninjas
+            otherwise -> do printMenu ninjas
 
 {-
 This function checks whether the desired ninja(with name and Country Code) is in the given list.
@@ -182,8 +225,8 @@ case findNinja ninjas nameNinja nameNinja2 of
 -}
 findNinja :: [Ninja]-> [Char] -> Char -> Maybe Ninja
 findNinja (x:xs) nameOfNinja countryOfNinja
-    | (name x == nameOfNinja) && (country x == countryOfNinja) = Just x
-    | otherwise = findNinja (tail (x:xs)) nameOfNinja countryOfNinja
+    | ((map toUpper (name x)) == (map toUpper nameOfNinja)) && (country x == (toUpper countryOfNinja)) = Just x
+    | otherwise = findNinja (tail (x:xs)) nameOfNinja (toUpper countryOfNinja)
 findNinja [] c countryOfNinja = Nothing
 
 {-
@@ -205,7 +248,7 @@ whoIsWin ninja1 ninja2
 
 updateWinnerInNinjaList :: [Ninja] -> Ninja -> Ninja -> [[Ninja]]
 updateWinnerInNinjaList allNinjas winner loser =
-    let updatedWinner = (incrementRoundofWinner winner)
+    let updatedWinner = controlNumberOfRoundOfNinja (incrementRoundofWinner winner)
     in [deleteLoserInNinjaList ((otherNinjas allNinjas updatedWinner) ++ [updatedWinner] ++ reverse (otherNinjas (reverse allNinjas) updatedWinner)) loser,[updatedWinner]]
 
 {-
@@ -225,6 +268,13 @@ incrementRoundofWinner ninja =
     let round = (r ninja)+1
     in Ninja {name = name ninja,country = country ninja, status = status ninja, exam1 = (exam1 ninja), exam2 = (exam2 ninja), ability1 = (ability1 ninja), ability2 = (ability2 ninja), r = round,score = score ninja}
 
+controlNumberOfRoundOfNinja :: Ninja -> Ninja
+controlNumberOfRoundOfNinja ninja
+    | r ninja == 3 =
+    let status = "Journeyman"
+    in Ninja {name = name ninja,country = country ninja, status = status, exam1 = (exam1 ninja), exam2 = (exam2 ninja), ability1 = (ability1 ninja), ability2 = (ability2 ninja), r = r ninja,score = score ninja}
+    | otherwise = ninja
+    
 deleteLoserInNinjaList :: [Ninja] -> Ninja -> [Ninja]
 deleteLoserInNinjaList allNinjas loser = ((otherNinjas allNinjas loser) ++ reverse (otherNinjas (reverse allNinjas) loser))
     
@@ -239,38 +289,4 @@ printWinner ninja = do
 
 instance Show (a -> b) where
          show a= "funcion"
-
-
-
----CONSOLE TEST CASES---
--- let objects = [Ninja {name = "Naruto", country = 'F', status = "Junior", exam1 = 40.0, exam2 = 45.0, ability1 = "Clone", ability2 = "Summon", r = 0, score = 103.5},Ninja {name = "Sasuke", country = 'F', status = "Junior", exam1 = 50.0, exam2 = 60.0, ability1 = "Lightning", ability2 = "Fire", r = 0, score = 133.0},Ninja {name = "Neiji", country = 'F', status = "Junior", exam1 = 40.0, exam2 = 75.0, ability1 = "Vision", ability2 = "Hit", r = 0, score = 82.5},Ninja {name = "Gaara", country = 'N', status = "Junior", exam1 = 55.0, exam2 = 80.0, ability1 = "Vision", ability2 = "Sand", r = 0, score = 131.5},Ninja {name = "Temari", country = 'N', status = "Junior", exam1 = 40.0, exam2 = 60.0, ability1 = "Hit", ability2 = "Blade", r = 0, score = 68.0},Ninja {name = "Kankuro", country = 'N', status = "Junior", exam1 = 30.0, exam2 = 50.0, ability1 = "Hit", ability2 = "Storm", r = 0, score = 50.0},Ninja {name = "Midare", country = 'W', status = "Junior", exam1 = 35.0, exam2 = 45.0, ability1 = "Hit", ability2 = "Water", r = 0, score = 71.0},Ninja {name = "Suiu", country = 'W', status = "Junior", exam1 = 45.0, exam2 = 55.0, ability1 = "Water", ability2 = "Blade", r = 0, score = 89.0},Ninja {name = "Samidare", country = 'W', status = "Junior", exam1 = 30.0, exam2 = 55.0, ability1 = "Water", ability2 = "Hit", r = 0, score = 71.5},Ninja {name = "Haruki", country = 'E', status = "Junior", exam1 = 50.0, exam2 = 65.0, ability1 = "Blade", ability2 = "Rock", r = 0, score = 84.5},Ninja {name = "Miyazaki", country = 'E', status = "Junior", exam1 = 45.0, exam2 = 55.0, ability1 = "Rock", ability2 = "Hit", r = 0, score = 69.0},Ninja {name = "Hiroshi", country = 'E', status = "Junior", exam1 = 40.0, exam2 = 60.0, ability1 = "Storm", ability2 = "Rock", r = 0, score = 68.0},Ninja {name = "Sana", country = 'L', status = "Junior", exam1 = 55.0, exam2 = 65.0, ability1 = "Lightning", ability2 = "Hit", r = 0, score = 107.0},Ninja {name = "Aimi", country = 'L', status = "Junior", exam1 = 60.0, exam2 = 65.0, ability1 = "Blade", ability2 = "Rock", r = 0, score = 89.5},Ninja {name = "Kira", country = 'L', status = "Junior", exam1 = 40.0, exam2 = 60.0, ability1 = "Storm", ability2 = "Rock", r = 0, score = 68.0}]
-
--- let fire = (filterByCountry objects 'F')
--- let lightning = (filterByCountry objects 'L')
--- let water = (filterByCountry objects 'W')
--- let wind = (filterByCountry objects 'N')
--- let earth = (filterByCountry objects 'E')
-
--- makeRoundBetweenTwoCountries objects fire water
-
--- let ninja1 = Ninja {name = "Naruto", country = 'F', status = "Junior", exam1 = 40.0, exam2 = 45.0, ability1 = "Clone", ability2 = "Summon", r = 0, score = 103.5}
--- let ninja2 = Ninja {name = "Kankuro", country = 'N', status = "Junior", exam1 = 30.0, exam2 = 50.0, ability1 = "Hit", ability2 = "Storm", r = 0, score = 50.0}
--- let ninja3 = Ninja {name = "Gaara", country = 'N', status = "Junior", exam1 = 55.0, exam2 = 80.0, ability1 = "Vision", ability2 = "Sand", r = 0, score = 131.5}
--- let ninja4 = Ninja {name = "Suiu", country = 'W', status = "Junior", exam1 = 45.0, exam2 = 55.0, ability1 = "Water", ability2 = "Blade", r = 0, score = 89.0}
-
--- makeRoundBetweenTwoCountries objects fire water
-
-
--- [Ninja] -> Ninja -> Ninja -> [Ninja]
--- makeRoundBetweenTwoNinjas allNinjas ninja1 ninja2
--- Iki Ninja arasinda round yapip yeni listeyi ve kazanan ninjayi dondurecek fonksiyon
-    -- Eski Listeden kazanan Ninjayi Bulacak ve round sayisini arttiracak,kaybeden ninjayi silecek fonksiyon
-    -- Kazanani print edecek
-
--- [Ninja]-> Char -> Char -> [Ninja]
--- makeRoundBetweenTwoCountries allNinjas c1 c2
--- Iki Ulkenin ilk ninjalari round yapip yeni listeyi ve kazanan ninjayi dondurecek fonksiyon
-    -- Eski Listeden kazanan Ninjayi Bulacak ve round sayisini arttiracak,kaybeden ninjayi silecek fonksiyon
-    -- Kazanani print edecek
-
 
