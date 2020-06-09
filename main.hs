@@ -188,7 +188,7 @@ handleEqualScore ninja1 ninja2
 -}
 updateWinnerInNinjaList :: [Ninja] -> Ninja -> Ninja -> [[Ninja]]
 updateWinnerInNinjaList allNinjas winner loser =
-    let updatedWinner = controlNumberOfRoundOfNinja (incrementRoundofWinner winner)
+    let updatedWinner = updateScoreOfWinnerNinja (controlNumberOfRoundOfNinja (incrementRoundofWinner winner))
     in [deleteLoserInNinjaList ((otherNinjas allNinjas updatedWinner) ++ [updatedWinner] ++ reverse (otherNinjas (reverse allNinjas) updatedWinner)) loser,[updatedWinner]]
 
 {-
@@ -220,7 +220,14 @@ controlNumberOfRoundOfNinja ninja
     let status = "Journeyman"
     in Ninja {name = name ninja,country = country ninja, status = status, exam1 = (exam1 ninja), exam2 = (exam2 ninja), ability1 = (ability1 ninja), ability2 = (ability2 ninja), r = r ninja,score = score ninja}
     | otherwise = ninja
-    
+
+{-
+    Update score of winner ninja.
+-}    
+updateScoreOfWinnerNinja :: Ninja -> Ninja
+updateScoreOfWinnerNinja ninja =
+    let newScore = (score ninja) + 10
+    in Ninja {name = name ninja, country = country ninja, status = status ninja, exam1 = exam1 ninja, exam2 = exam2 ninja, ability1 = ability1 ninja, ability2 = ability2 ninja, r = r ninja, score = newScore}
 {-
     This function deletes the loser ninja of the round from ninja list.
 -}
