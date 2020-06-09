@@ -35,51 +35,6 @@ decAbility "Summon" = 50
 decAbility "Storm" = 10
 decAbility "Rock" = 20
 
-furkanNinjas = [
-    Ninja {
-        name = "Naruto", 
-        country = 'F', 
-        status = "Junior", 
-        exam1 = 40.0, 
-        exam2 = 45.0, 
-        ability1 = "Clone", 
-        ability2 = "Summon", 
-        r = 0, 
-        score = 103.5
-    },
-    Ninja {
-        name = "Midare", 
-        country = 'W', 
-        status = "Junior", 
-        exam1 = 35.0, 
-        exam2 = 45.0, 
-        ability1 = "Hit", 
-        ability2 = "Water", 
-        r = 0, 
-        score = 71.0
-    },
-    Ninja {
-        name = "Midare", 
-        country = 'W', 
-        status = "Junior", 
-        exam1 = 35.0, 
-        exam2 = 45.0, 
-        ability1 = "Hit", 
-        ability2 = "Water", 
-        r = 0, 
-        score = 45.0
-    },
-    Ninja {
-        name = "Midare", 
-        country = 'W', 
-        status = "Junior", 
-        exam1 = 35.0, 
-        exam2 = 45.0, 
-        ability1 = "Hit", 
-        ability2 = "Water", 
-        r = 0, 
-        score = 65.0
-    }]
 
 {-
     This function parses given string to ninja.
@@ -271,6 +226,18 @@ isStatusJourneyman c
     | c == "Journeyman" = True
     | otherwise = False
 
+{- 
+    This function gives country name in terms of given char
+-}
+parseReverseCountryCode :: Char -> String
+parseReverseCountryCode 'E' = "Earth"
+parseReverseCountryCode 'N' = "Wind"
+parseReverseCountryCode 'W' = "Water"
+parseReverseCountryCode 'F' = "Fire"
+parseReverseCountryCode 'L' = "Lightning"
+parseReverseCountryCode c = ""
+
+
 main = do
         hSetBuffering stdin NoBuffering
         hSetBuffering stdout NoBuffering
@@ -306,7 +273,13 @@ printMenu ninjas = do
                                 True -> do
                                     putStr "\n" 
                                     let countryNinjas = (sortNinjasOfCountry ninjas countryCode)
-                                    mapM_ putStrLn (map tellNinja countryNinjas)
+                                        countryName = (parseReverseCountryCode (toUpper countryCode))
+                                    case filterJourneymans countryNinjas of
+                                        [] -> do
+                                            mapM_ putStrLn (map tellNinja countryNinjas)
+                                        (x:_) -> do
+                                            mapM_ putStrLn (map tellNinja countryNinjas)
+                                            putStrLn (countryName ++ " cannot be included in a fight")
                                 False -> putStrLn "\nInvalid Country Code"
                             printMenu ninjas  
             'B'     -> do   putStr "\n"
