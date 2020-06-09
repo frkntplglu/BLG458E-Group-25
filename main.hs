@@ -81,6 +81,9 @@ furkanNinjas = [
         score = 65.0
     }]
 
+{-
+    This function parses given string to ninja.
+-}
 parse :: String -> Ninja
 parse ninja = 
         let [n,c,e1,e2,a1,a2] = words ninja
@@ -103,14 +106,23 @@ sortByRound = sortBy (comparing r)
 tellNinja :: Ninja -> String  
 tellNinja (Ninja {name = n, country = c, status = s, exam1 = e1, exam2 = e2, ability1 = a1, ability2 = a2, r = r, score = score}) = n ++ ", Score: " ++ show score ++ ", Status: " ++ s ++ ", Round: " ++ show r
 
+{-
+    This function controls whether two char(Country code) is equal.
+-}
 isSameCountryCode :: Char -> Char -> Bool
 isSameCountryCode c n = c == n
 
+{-
+    This function controls whether country code of given ninja is same with given countr code.
+-}
 isSameCountry :: Char -> Ninja -> Bool 
 isSameCountry c ninja = 
         isSameCountryCode c countryy
         where countryy = (country ninja)
-        
+
+{-
+    This function returns ninja list of custom country according to given char.
+-}        
 filterByCountry :: [Ninja] -> Char -> [Ninja]
 filterByCountry xs c =
   filter (isSameCountry (toUpper(c))) xs
@@ -119,10 +131,139 @@ sortNinjasOfCountry :: [Ninja] -> Char -> [Ninja]
 sortNinjasOfCountry ninjas countryCode =
     (sortByRound (sortByScore (filterByCountry ninjas countryCode)))
 
+{- 
+This function controls whether given country code is valid.
+-}
 controlCountryCode :: Char -> Bool
 controlCountryCode c 
     | toUpper c == 'E' || toUpper c == 'L' || toUpper c ==  'W' || toUpper c ==  'N' || toUpper c ==  'F' = True
     | otherwise = False
+
+
+sortAllNinjas :: [Ninja] -> [Ninja]
+sortAllNinjas ninjas = 
+    sortByRound (sortByScore (ninjas))
+
+{-
+    This function checks whether the desired ninja(with name and Country Code) is in the given list.
+    If it is in the list it returns Just ninja. If it is not in the list it returns Nothing.
+    case findNinja ninjas nameNinja nameNinja2 of
+        Just n -> Do operations using returned ninja(n)
+        Nothing -> Request informations again.
+-}
+findNinja :: [Ninja]-> [Char] -> Char -> Maybe Ninja
+findNinja (x:xs) nameOfNinja countryOfNinja
+    | ((map toUpper (name x)) == (map toUpper nameOfNinja)) && (country x == (toUpper countryOfNinja)) = Just x
+    | otherwise = findNinja (tail (x:xs)) nameOfNinja (toUpper countryOfNinja)
+findNinja [] c countryOfNinja = Nothing
+
+{-
+    This function makes round between two ninjas. Determines the winner of the Round with the whoiswin function.
+    Then makes call to updateWinnerInNinjaList function to update list.
+-}
+makeRoundBetweenTwoNinjas :: [Ninja] -> Ninja -> Ninja -> [[Ninja]]
+makeRoundBetweenTwoNinjas allNinjas ninja1 ninja2 =
+    let [winner,loser] = (whoIsWin ninja1 ninja2)
+    in (updateWinnerInNinjaList allNinjas winner loser)
+
+{-
+    This function returns a list that the winning(has high score) is in the first place and the loser(has lower score) is in the second place.
+-}
+whoIsWin :: Ninja -> Ninja -> [Ninja]
+whoIsWin ninja1 ninja2
+    | (score ninja1) > (score ninja2) = [ninja1,ninja2]
+    | (score ninja1) < (score ninja2) = [ninja2,ninja1]
+    | (score ninja1) == (score ninja2) = handleEqualScore ninja1 ninja2
+
+{-
+    If scores are equal then ability1+ability2 greater one is win.
+-}           
+handleEqualScore :: Ninja -> Ninja -> [Ninja]
+handleEqualScore ninja1 ninja2
+    | ((decAbility (ability1 ninja1))+ (decAbility (ability2 ninja1))) >= ((decAbility (ability1 ninja2))+ (decAbility (ability2 ninja2)))  =[ninja1,ninja2]
+    | otherwise = [ninja2,ninja1]
+
+{-
+    This function updates status and number of round information of give ninja(winner of round).
+-}
+updateWinnerInNinjaList :: [Ninja] -> Ninja -> Ninja -> [[Ninja]]
+updateWinnerInNinjaList allNinjas winner loser =
+    let updatedWinner = controlNumberOfRoundOfNinja (incrementRoundofWinner winner)
+    in [deleteLoserInNinjaList ((otherNinjas allNinjas updatedWinner) ++ [updatedWinner] ++ reverse (otherNinjas (reverse allNinjas) updatedWinner)) loser,[updatedWinner]]
+
+{-
+    This function returns the ninjas behind or in front of given ninja.
+    -If it is desired to return the ninjas behind of given ninja.
+    otherNinjas ninjaList ninja
+    -If it is desired to return the ninjas in front of given ninja.
+    reverse (otherNinjas (reverse ninjaList) ninja)
+-}
+otherNinjas::[Ninja]->Ninja->[Ninja]
+otherNinjas (x:xs) c
+    | name x == name c = xs
+    | otherwise = otherNinjas (tail (x:xs)) c
+
+{-
+    This function increments number of round given ninja(winner of round).
+-}
+incrementRoundofWinner :: Ninja -> Ninja
+incrementRoundofWinner ninja =
+    let round = (r ninja)+1
+    in Ninja {name = name ninja,country = country ninja, status = status ninja, exam1 = (exam1 ninja), exam2 = (exam2 ninja), ability1 = (ability1 ninja), ability2 = (ability2 ninja), r = round,score = score ninja}
+
+{-
+    This function controls number of round given ninja(winner of round). If number of rounds is 3, set status of ninja as "Journeyman".
+-}
+controlNumberOfRoundOfNinja :: Ninja -> Ninja
+controlNumberOfRoundOfNinja ninja
+    | r ninja == 3 =
+    let status = "Journeyman"
+    in Ninja {name = name ninja,country = country ninja, status = status, exam1 = (exam1 ninja), exam2 = (exam2 ninja), ability1 = (ability1 ninja), ability2 = (ability2 ninja), r = r ninja,score = score ninja}
+    | otherwise = ninja
+    
+{-
+    This function deletes the loser ninja of the round from ninja list.
+-}
+deleteLoserInNinjaList :: [Ninja] -> Ninja -> [Ninja]
+deleteLoserInNinjaList allNinjas loser = ((otherNinjas allNinjas loser) ++ reverse (otherNinjas (reverse allNinjas) loser))
+
+{-
+    This function makes round between two countries. The first ninja both of the country make round.
+-}
+
+makeRoundBetweenTwoCountries :: [Ninja] -> [Ninja] -> [Ninja] -> [[Ninja]]
+makeRoundBetweenTwoCountries allNinjas country1 country2 =
+    let [winner,loser] = (whoIsWin (head country1) (head country2))
+    in (updateWinnerInNinjaList allNinjas winner loser)
+
+{-
+    This Function prints given winner ninja of the round. 
+-}
+printWinner :: Ninja -> IO()
+printWinner ninja = do 
+    putStrLn $ "\nWinner: " ++ name ninja ++ ", Round: " ++ show (r ninja) ++ ", Status: " ++ status ninja
+
+{-
+    Filters journeymans in list
+-}
+filterJourneymans :: [Ninja] -> [Ninja]
+filterJourneymans xs = 
+    filter (isJourneyman) xs
+
+{-
+    Controls status of given ninja is journeyman
+-}
+isJourneyman :: Ninja -> Bool
+isJourneyman ninja = (isStatusJourneyman (status ninja))
+
+{-
+    Controls given char whether it is Journeyman.
+-}
+isStatusJourneyman :: [Char] -> Bool
+isStatusJourneyman c
+    | c == "Journeyman" = True
+    | otherwise = False
+
 main = do
         hSetBuffering stdin NoBuffering
         hSetBuffering stdout NoBuffering
@@ -133,16 +274,13 @@ main = do
                 let fileLines = lines handle
                 let ninjas = sortByRound ( sortByScore (map parse fileLines) )
                 printMenu ninjas
-          --  _ -> putStrLn "Wrong number of arguments"
-            _  -> do -- Delete this block before submit
-                handle <- readFile "csereport.txt"
-                let fileLines = lines handle
-                let ninjas = sortByRound ( sortByScore (map parse fileLines) )
-                printMenu ninjas
+            _ -> putStrLn "Wrong number of arguments"
+            -- _  -> do -- Delete this block before submit
+            --     handle <- readFile "csereport.txt"
+            --     let fileLines = lines handle
+            --     let ninjas = sortByRound ( sortByScore (map parse fileLines) )
+            --     printMenu ninjas
 
-sortAllNinjas :: [Ninja] -> [Ninja]
-sortAllNinjas ninjas = 
-    sortByRound (sortByScore (ninjas))
 
 printMenu :: [Ninja] -> IO()
 printMenu ninjas = do
@@ -197,88 +335,32 @@ printMenu ninjas = do
                                         True -> do
                                             let countryNinjas1 = (sortNinjasOfCountry ninjas countryCode1)
                                             let countryNinjas2 = (sortNinjasOfCountry ninjas countryCode2)
-                                            let [newList,winner] = (makeRoundBetweenTwoCountries ninjas countryNinjas1 countryNinjas2)
-                                            printWinner (head winner)
-                                            printMenu newList
+                                            case null countryNinjas1 of
+                                                True -> do
+                                                    putStrLn ("\nThere is no ninja remain from this country with country code " ++ countryCode1:[])
+                                                    printMenu ninjas
+                                                False -> do
+                                                    case null countryNinjas2 of
+                                                        True -> do
+                                                            putStrLn ("\nThere is no ninja remain from this country with country code " ++ countryCode2:[])
+                                                            printMenu ninjas
+                                                        False -> do
+                                                            let [newList,winner] = (makeRoundBetweenTwoCountries ninjas countryNinjas1 countryNinjas2)
+                                                            printWinner (head winner)
+                                                            printMenu newList
                                         False -> do
                                             putStrLn "Invalid Country Code"
                                 False -> putStrLn "Invalid Country Code" 
                             printMenu ninjas
-            'E'     -> do   print("Exit")
-                            printMenu ninjas
+            'E'     -> do   putStrLn("\n");
+                            let journeymans = (filterJourneymans ninjas)
+                            case null journeymans of
+                                True -> do
+                                    putStrLn("There is no journeyman ninjas")
+                                False  -> do
+                                    mapM_ putStrLn (map tellNinja journeymans)  
+                              
             otherwise -> do printMenu ninjas
-
-{-
-This function checks whether the desired ninja(with name and Country Code) is in the given list.
-If it is in the list it returns Just ninja. If it is not in the list it returns Nothing.
-case findNinja ninjas nameNinja nameNinja2 of
-    Just n -> Do operations using returned ninja(n)
-    Nothing -> Request informations again.
--}
-findNinja :: [Ninja]-> [Char] -> Char -> Maybe Ninja
-findNinja (x:xs) nameOfNinja countryOfNinja
-    | ((map toUpper (name x)) == (map toUpper nameOfNinja)) && (country x == (toUpper countryOfNinja)) = Just x
-    | otherwise = findNinja (tail (x:xs)) nameOfNinja (toUpper countryOfNinja)
-findNinja [] c countryOfNinja = Nothing
-
-{-
-This function makes round between two ninjas. Determines the winner of the Round with the whoiswin function.
-Then makes call to updateWinnerInNinjaList function to update list.
--}
-makeRoundBetweenTwoNinjas :: [Ninja] -> Ninja -> Ninja -> [[Ninja]]
-makeRoundBetweenTwoNinjas allNinjas ninja1 ninja2 =
-    let [winner,loser] = (whoIsWin ninja1 ninja2)
-    in (updateWinnerInNinjaList allNinjas winner loser)
-
-{-
-This function returns a list that the winning(has high score) is in the first place and the loser(has lower score) is in the second place.
--}
-whoIsWin :: Ninja -> Ninja -> [Ninja]
-whoIsWin ninja1 ninja2
-    | (score ninja1) > (score ninja2) = [ninja1,ninja2]
-    | (score ninja1) < (score ninja2) = [ninja2,ninja1]
-
-updateWinnerInNinjaList :: [Ninja] -> Ninja -> Ninja -> [[Ninja]]
-updateWinnerInNinjaList allNinjas winner loser =
-    let updatedWinner = controlNumberOfRoundOfNinja (incrementRoundofWinner winner)
-    in [deleteLoserInNinjaList ((otherNinjas allNinjas updatedWinner) ++ [updatedWinner] ++ reverse (otherNinjas (reverse allNinjas) updatedWinner)) loser,[updatedWinner]]
-
-{-
-This function returns the ninjas behind or in front of given ninja.
-    -If it is desired to return the ninjas behind of given ninja.
-    otherNinjas ninjaList ninja
-    -If it is desired to return the ninjas in front of given ninja.
-    reverse (otherNinjas (reverse ninjaList) ninja)
--}
-otherNinjas::[Ninja]->Ninja->[Ninja]
-otherNinjas (x:xs) c
-    | name x == name c = xs
-    | otherwise = otherNinjas (tail (x:xs)) c
-
-incrementRoundofWinner :: Ninja -> Ninja
-incrementRoundofWinner ninja =
-    let round = (r ninja)+1
-    in Ninja {name = name ninja,country = country ninja, status = status ninja, exam1 = (exam1 ninja), exam2 = (exam2 ninja), ability1 = (ability1 ninja), ability2 = (ability2 ninja), r = round,score = score ninja}
-
-controlNumberOfRoundOfNinja :: Ninja -> Ninja
-controlNumberOfRoundOfNinja ninja
-    | r ninja == 3 =
-    let status = "Journeyman"
-    in Ninja {name = name ninja,country = country ninja, status = status, exam1 = (exam1 ninja), exam2 = (exam2 ninja), ability1 = (ability1 ninja), ability2 = (ability2 ninja), r = r ninja,score = score ninja}
-    | otherwise = ninja
-    
-deleteLoserInNinjaList :: [Ninja] -> Ninja -> [Ninja]
-deleteLoserInNinjaList allNinjas loser = ((otherNinjas allNinjas loser) ++ reverse (otherNinjas (reverse allNinjas) loser))
-    
-makeRoundBetweenTwoCountries :: [Ninja] -> [Ninja] -> [Ninja] -> [[Ninja]]
-makeRoundBetweenTwoCountries allNinjas country1 country2 =
-    let [winner,loser] = (whoIsWin (head country1) (head country2))
-    in (updateWinnerInNinjaList allNinjas winner loser)
-
-printWinner :: Ninja -> IO()
-printWinner ninja = do 
-    putStrLn $ "\nWinner: " ++ name ninja ++ ", Round: " ++ show (r ninja) ++ ", Status: " ++ status ninja
 
 instance Show (a -> b) where
          show a= "funcion"
-
